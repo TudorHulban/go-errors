@@ -1,6 +1,9 @@
 package goerrors
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type ErrEntryNotFound struct {
 	Key any
@@ -21,13 +24,22 @@ type ErrDatasetEntriesNotFound struct {
 const msgErrEntriesNotFound = "no entries found"
 
 func (e ErrDatasetEntriesNotFound) Error() string {
-	return sprintf("Area:%s", _AreaDatasets) +
-		_space +
-		sprintf("Caller:%s", e.Caller) +
-		_space +
-		fmt.Sprintf("Key:%v", e.Key) +
-		" : " +
-		msgErrEntriesNotFound
+	var builder strings.Builder
+
+	builder.Grow(64)
+
+	builder.WriteString("Area:")
+	builder.WriteString(_AreaDatasets)
+	builder.WriteString(_space)
+	builder.WriteString("Caller:")
+	builder.WriteString(e.Caller)
+	builder.WriteString(_space)
+	builder.WriteString("Key:")
+	fmt.Fprintf(&builder, "%v", e.Key)
+	builder.WriteString(" : ")
+	builder.WriteString(msgErrEntriesNotFound)
+
+	return builder.String()
 }
 
 type ErrDatasetEntryAlreadyExists struct {
@@ -38,13 +50,22 @@ type ErrDatasetEntryAlreadyExists struct {
 const msgErrEntryExists = "already exists"
 
 func (e ErrDatasetEntryAlreadyExists) Error() string {
-	return sprintf("Area: %s", _AreaDatasets) +
-		_space +
-		sprintf("Caller: %s", e.Caller) +
-		_space +
-		fmt.Sprintf("Entry: %#v", e.Entry) +
-		" : " +
-		msgErrEntryExists
+	var builder strings.Builder
+
+	builder.Grow(128)
+
+	builder.WriteString("Area: ")
+	builder.WriteString(_AreaDatasets)
+	builder.WriteString(_space)
+	builder.WriteString("Caller: ")
+	builder.WriteString(e.Caller)
+	builder.WriteString(_space)
+	builder.WriteString("Entry: ")
+	fmt.Fprintf(&builder, "%#v", e.Entry)
+	builder.WriteString(" : ")
+	builder.WriteString(msgErrEntryExists)
+
+	return builder.String()
 }
 
 type ErrDatasetScan struct {
@@ -53,9 +74,41 @@ type ErrDatasetScan struct {
 }
 
 func (e ErrDatasetScan) Error() string {
-	return sprintf("Area: %s", _AreaDatasets) +
-		_space +
-		sprintf("Caller: %s", e.Caller) +
-		_space +
-		fmt.Sprintf("Issue scan: %#v", e.Issue.Error())
+	var builder strings.Builder
+
+	builder.Grow(128)
+
+	builder.WriteString("Area: ")
+	builder.WriteString(_AreaDatasets)
+	builder.WriteString(_space)
+	builder.WriteString("Caller: ")
+	builder.WriteString(e.Caller)
+	builder.WriteString(_space)
+	builder.WriteString("Issue scan: ")
+	fmt.Fprintf(&builder, "%#v", e.Issue.Error())
+
+	return builder.String()
+}
+
+type ErrNoUpdates struct {
+	Params any
+
+	Caller string
+}
+
+func (e ErrNoUpdates) Error() string {
+	var builder strings.Builder
+
+	builder.Grow(128)
+
+	builder.WriteString("Area: ")
+	builder.WriteString(_AreaDatasets)
+	builder.WriteString(_space)
+	builder.WriteString("Caller: ")
+	builder.WriteString(e.Caller)
+	builder.WriteString(_space)
+	builder.WriteString("Params: ")
+	fmt.Fprintf(&builder, "%#v", e.Params)
+
+	return builder.String()
 }

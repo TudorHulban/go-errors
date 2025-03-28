@@ -1,6 +1,9 @@
 package goerrors
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type ErrInfrastructure struct {
 	Issue              error
@@ -9,23 +12,26 @@ type ErrInfrastructure struct {
 }
 
 func (e ErrInfrastructure) Error() string {
-	res := [3]string{
-		sprintf("Area: %s", _AreaInfrastructure),
-		sprintf("Name: %s", e.NameInfrastructure),
-		fmt.Sprintf("Caller: %s", e.Caller),
+	var builder strings.Builder
+
+	builder.Grow(64)
+
+	builder.WriteString("Area: ")
+	builder.WriteString(_AreaInfrastructure)
+	builder.WriteString(_space)
+	builder.WriteString("Name: ")
+	builder.WriteString(e.NameInfrastructure)
+	builder.WriteString(_space)
+	builder.WriteString("Caller: ")
+	builder.WriteString(e.Caller)
+
+	if e.Issue != nil {
+		builder.WriteString(_space)
+		builder.WriteString("Issue: ")
+		builder.WriteString(e.Issue.Error())
 	}
 
-	if e.Issue == nil {
-		return res[0] + _space + res[1] + _space + res[2]
-	}
-
-	return res[0] +
-		_space +
-		res[1] +
-		_space +
-		res[2] +
-		_space +
-		sprintf("Issue: %s", e.Issue.Error())
+	return builder.String()
 }
 
 type ErrInfrastructureWParams struct {
@@ -36,30 +42,27 @@ type ErrInfrastructureWParams struct {
 }
 
 func (e ErrInfrastructureWParams) Error() string {
-	res := [4]string{
-		sprintf("Area: %s", _AreaInfrastructure),
-		sprintf("Name: %s", e.NameInfrastructure),
-		sprintf("Caller: %s", e.Caller),
-		fmt.Sprintf("Params: %#v", e.Params),
+	var builder strings.Builder
+
+	builder.Grow(128)
+
+	builder.WriteString("Area: ")
+	builder.WriteString(_AreaInfrastructure)
+	builder.WriteString(_space)
+	builder.WriteString("Name: ")
+	builder.WriteString(e.NameInfrastructure)
+	builder.WriteString(_space)
+	builder.WriteString("Caller: ")
+	builder.WriteString(e.Caller)
+	builder.WriteString(_space)
+	builder.WriteString("Params: ")
+	fmt.Fprintf(&builder, "%#v", e.Params)
+
+	if e.Issue != nil {
+		builder.WriteString(_space)
+		builder.WriteString("Issue: ")
+		builder.WriteString(e.Issue.Error())
 	}
 
-	if e.Issue == nil {
-		return res[0] +
-			_space +
-			res[1] +
-			_space +
-			res[2] +
-			_space +
-			res[3]
-	}
-
-	return res[0] +
-		_space +
-		res[1] +
-		_space +
-		res[2] +
-		_space +
-		res[3] +
-		_space +
-		fmt.Sprintf("Issue: %s", e.Issue.Error())
+	return builder.String()
 }

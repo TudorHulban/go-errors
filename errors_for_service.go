@@ -12,19 +12,32 @@ type ErrService struct {
 }
 
 func (e ErrService) Error() string {
-	area := sprintf(
-		"Area: %s-%s",
-		_AreaService,
-		strings.ToUpper(e.NameService[:1])+e.NameService[1:], // ASCII speed
-	)
+	var builder strings.Builder
 
-	caller := "Caller: " + e.Caller
+	builder.Grow(64)
 
-	if e.Issue != nil {
-		return area + _space + caller + _space + "Issue: " + e.Issue.Error()
+	builder.WriteString("Area: ")
+	builder.WriteString(_AreaService)
+	builder.WriteByte('-')
+
+	if len(e.NameService) > 0 {
+		builder.WriteString(strings.ToUpper(e.NameService[:1]))
+		if len(e.NameService) > 1 {
+			builder.WriteString(e.NameService[1:])
+		}
 	}
 
-	return area + _space + caller
+	builder.WriteString(_space)
+	builder.WriteString("Caller: ")
+	builder.WriteString(e.Caller)
+
+	if e.Issue != nil {
+		builder.WriteString(_space)
+		builder.WriteString("Issue: ")
+		builder.WriteString(e.Issue.Error())
+	}
+
+	return builder.String()
 }
 
 func (e ErrService) Unwrap() error {
@@ -39,22 +52,35 @@ type ErrServiceWithParams struct {
 }
 
 func (e ErrServiceWithParams) Error() string {
-	var issueDescription string
+	var builder strings.Builder
 
-	if e.Issue != nil {
-		issueDescription = _space + `Issue: ` + e.Issue.Error()
+	builder.Grow(128)
+
+	builder.WriteString("Area: ")
+	builder.WriteString(_AreaService)
+	builder.WriteByte('-')
+	if len(e.NameService) > 0 {
+		first := strings.ToUpper(e.NameService[:1])
+		builder.WriteString(first)
+		if len(e.NameService) > 1 {
+			builder.WriteString(e.NameService[1:])
+		}
 	}
 
-	return sprintf(
-		"Area: %s-%s",
-		_AreaService,
-		strings.ToUpper(e.NameService[:1])+e.NameService[1:], // ASCII speed
-	) +
-		_space +
-		`Caller: ` + e.Caller +
-		issueDescription +
-		_space +
-		fmt.Sprintf("%#v", e.Params)
+	builder.WriteString(_space)
+	builder.WriteString("Caller: ")
+	builder.WriteString(e.Caller)
+
+	if e.Issue != nil {
+		builder.WriteString(_space)
+		builder.WriteString("Issue: ")
+		builder.WriteString(e.Issue.Error())
+	}
+
+	builder.WriteString(_space)
+	fmt.Fprintf(&builder, "%#v", e.Params)
+
+	return builder.String()
 }
 
 func (e ErrServiceWithParams) Unwrap() error {
@@ -82,17 +108,24 @@ type ErrServiceValidation struct {
 const areaErrServiceValidation = "Service-Validation"
 
 func (e ErrServiceValidation) Error() string {
-	area := sprintf(
-		"Area: %s-%s",
-		areaErrServiceValidation,
-		e.ServiceName,
-	)
+	var builder strings.Builder
 
-	caller := sprintf("Caller: %s", e.Caller)
+	builder.Grow(64)
+
+	builder.WriteString("Area: ")
+	builder.WriteString(areaErrServiceValidation)
+	builder.WriteByte('-')
+	builder.WriteString(e.ServiceName)
+
+	builder.WriteString(_space)
+	builder.WriteString("Caller: ")
+	builder.WriteString(e.Caller)
 
 	if e.Issue != nil {
-		return area + _space + caller + _space + "Issue: " + e.Issue.Error()
+		builder.WriteString(_space)
+		builder.WriteString("Issue: ")
+		builder.WriteString(e.Issue.Error())
 	}
 
-	return area + _space + caller
+	return builder.String()
 }

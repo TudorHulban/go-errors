@@ -11,23 +11,32 @@ type ErrCaching struct {
 }
 
 func (e ErrCaching) Error() string {
-	area := sprintf(
-		"Area: %s-%s",
-		_AreaCache,
-		strings.ToUpper(e.NameCaching[:1])+e.NameCaching[1:], // ASCII speed
-	)
+	var builder strings.Builder
 
-	caller := "Caller: " + e.Caller
+	builder.Grow(128)
 
-	if e.Issue != nil {
-		return area + _space + caller + _space +
-			sprintf(
-				"Issue: %s",
-				e.Issue.Error(),
-			)
+	builder.WriteString("Area: ")
+	builder.WriteString(_AreaCache)
+	builder.WriteByte('-')
+
+	if len(e.NameCaching) > 0 {
+		builder.WriteString(strings.ToUpper(e.NameCaching[:1]))
+		if len(e.NameCaching) > 1 {
+			builder.WriteString(e.NameCaching[1:])
+		}
 	}
 
-	return area + _space + caller
+	builder.WriteString(_space)
+	builder.WriteString("Caller: ")
+	builder.WriteString(e.Caller)
+
+	if e.Issue != nil {
+		builder.WriteString(_space)
+		builder.WriteString("Issue: ")
+		builder.WriteString(e.Issue.Error())
+	}
+
+	return builder.String()
 }
 
 func (e ErrCaching) Unwrap() error {

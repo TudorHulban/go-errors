@@ -3,6 +3,7 @@ package goerrors
 import (
 	"errors"
 	"fmt"
+	"strings"
 )
 
 var ErrUnknownValue = errors.New("unknown value")
@@ -13,14 +14,23 @@ type ErrValidation struct {
 }
 
 func (e ErrValidation) Error() string {
-	area := "Area: " + _AreaValidation
-	caller := "Caller: " + e.Caller
+	var builder strings.Builder
+
+	builder.Grow(64)
+
+	builder.WriteString("Area: ")
+	builder.WriteString(_AreaValidation)
+	builder.WriteString(_space)
+	builder.WriteString("Caller: ")
+	builder.WriteString(e.Caller)
 
 	if e.Issue != nil {
-		return area + _space + caller + _space + "Issue: " + e.Issue.Error()
+		builder.WriteString(_space)
+		builder.WriteString("Issue: ")
+		builder.WriteString(e.Issue.Error())
 	}
 
-	return area + _space + caller
+	return builder.String()
 }
 
 type ErrNilInput struct {
